@@ -55,12 +55,13 @@ def show_all_my_orders(db: Session = Depends(get_db),
         models.Orders.applicant_id == current_user.id).filter(
             models.Orders.order_name.contains(search_order_name)
         ).all()
-    
+
     if not orders:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail="You dont have any orders")
+        raise HTTPException(404,
+                        detail="You dont  have anyorders")
 
     return orders
+ 
 
 #----------TAKE ORDER------
 @router.put("/{id}", response_model= schemas.OrderResponseAfterTake)
@@ -110,6 +111,31 @@ def take_order(id: int, db: Session = Depends(get_db),
     return {"message": "took order successfully",
             "order": order}
 
+#--------SHOW ALL THE ORDERS I HAVE TAKEN------------
+
+@router.get("/orders_i_took", 
+            response_model=schemas.OrdersListShowOrdersITook)
+def show_all_taken_orders_by_me(db: Session = Depends(get_db),    
+                    current_user = Depends(oauth2.get_current_user),
+                    search_order_name: str = ""):
+    
+    orders = db.query(models.Orders).filter(
+        models.Orders.taken_by_id == current_user.id).filter(
+            models.Orders.order_name.contains(search_order_name)
+        ).all()
+
+    orders_lists = db.query(models.OrdersList).filter(
+        models.OrdersList.taken_by_id == current_user.id).filter(
+            models.OrdersList.list_name.contains(search_order_name)
+        ).all()
+    
+    if not orders and not orders_lists:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="You didn't take anything")
+
+    return {"orders": orders,
+            "orders_lists": orders_lists}
+
 # ----UPDATE MY ORDER-----
 @router.patch("/my_orders/{id}", response_model=schemas.OrderResponse)
 def update_order(order_credentials: schemas.OrderUpdate,
@@ -140,5 +166,9 @@ def update_order(order_credentials: schemas.OrderUpdate,
     db.refresh(order)
 
     return order
+
+
+
+
 
     

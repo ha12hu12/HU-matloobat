@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from . routers import users, auth, orders
+from . routers import users, auth, orders, orders_list
 
 app = FastAPI()
 
@@ -10,3 +10,4 @@ def root():
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(orders.router)
+app.include_router(orders_list.router)
