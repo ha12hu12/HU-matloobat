@@ -73,8 +73,24 @@ def show_specific_list(id: int,
     return {"list": list,
             "items": orders}
 
+#-----SHOW ALL MY LISTS----------
+@router.get("/my_lists", response_model=List[schemas.OrdersListResponseAfterCreate])
+def show_all_my_lists(db: Session = Depends(get_db),
+                current_user = Depends(oauth2.get_current_user)):
+
+    lists = db.query(models.OrdersList).filter(
+        models.OrdersList.applicant_id == current_user.id,
+        models.OrdersList.is_took == False
+    ).all()
+
+    if not lists:
+        raise HTTPException(404,
+                        detail="You dont have any lists")
+    
+    return lists
+
 #--------GET ONE OF YOUR LISTS WITH ITS ORDERS-------
-@router.get("/my_lists/specific_list/{id}", 
+@router.get("/my_lists/{id}", 
             response_model=schemas.OrdersListWithOrdersResponse)
 def show_specific_my_list(id: int,
                        db: Session = Depends(get_db),
