@@ -266,6 +266,50 @@ def done_item_in_list(credentials: schemas.DoneItem,
 
     return item
 
+#----------TAKE ORDERS LIST------
+@router.put("/{id}", response_model=schemas.BaseForList)
+def take_orders_list(id: int, db: Session = Depends(get_db),
+               current_user = Depends(oauth2.get_current_user)):
+
+    # 1. جلب استعلام الطلب بناءً على الـ ID
+    orders_list_query = db.query(models.OrdersList).filter(models.OrdersList.id == id)
+    orders_list = orders_list_query.first()
+
+    # 2. التحقق من وجود الطلب في قاعدة البيانات
+    if not orders_list:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail="You entered a wrong id")
+
+    # 3. منع المستخدم من أخذ أو التعديل على طلباته الشخصية
+    if orders_list.applicant_id == current_user.id:
+        raise HTTPException(status.HTTP_403_FORBIDDEN,
+                            detail="You cant take your own orders list")
+
+    # --- الحالة الأولى: إلغاء أخذ الطلب (UNTAKE ORDER) ---
+    if orders_list.is_took == True:
+        if orders_list.taken_by_id == current_user.id:
+            orders_list_query.update({"is_took": False, "taken_by_id": None}, 
+                                     synchronize_session=False)
+            db.commit()
+            db.refresh(orders_list)
+            
+            # نُرجع كائن الطلب مباشرة ليتوافق مع schemas.BaseForList
+            return orders_list
+        else:
+            raise HTTPException(status.HTTP_403_FORBIDDEN,
+                                detail="this orders list is taken by another user")
+
+    # --- الحالة الثانية: أخذ الطلب (TAKE ORDER) ---
+    else:
+        orders_list_query.update({"is_took": True, "taken_by_id": current_user.id}, 
+                                 synchronize_session=False)
+        db.commit()
+        db.refresh(orders_list)
+        
+        # نُرجع كائن الطلب المحدث ليتوافق مع schemas.BaseForList
+        return orders_list
+
+
     
 
 

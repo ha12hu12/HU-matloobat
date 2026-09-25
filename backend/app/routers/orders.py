@@ -58,7 +58,7 @@ def show_all_my_orders(db: Session = Depends(get_db),
 
     if not orders:
         raise HTTPException(404,
-                        detail="You dont  have anyorders")
+                        detail="You dont  have any orders")
 
     return orders
  
@@ -166,6 +166,25 @@ def update_order(order_credentials: schemas.OrderUpdate,
     db.refresh(order)
 
     return order
+
+# ----DELETE MY ORDER-----
+@router.delete("/my_orders/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_order(id: int,
+                 db: Session = Depends(get_db),
+                 current_user = Depends(oauth2.get_current_user)):
+
+    order = db.query(models.Orders).filter(
+        models.Orders.id == id,
+        models.Orders.applicant_id == current_user.id).first()
+
+    if not order:
+        raise HTTPException(status.HTTP_404_NOT_FOUND,
+                            detail="wrong id")
+
+    db.delete(order)
+    db.commit()
+
+    return None
 
 
 
