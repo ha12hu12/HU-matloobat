@@ -74,13 +74,12 @@ def show_specific_list(id: int,
             "items": orders}
 
 #-----SHOW ALL MY LISTS----------
-@router.get("/my_lists", response_model=List[schemas.OrdersListResponseAfterCreate])
+@router.get("/my_lists", response_model=List[schemas.BaseForList])
 def show_all_my_lists(db: Session = Depends(get_db),
                 current_user = Depends(oauth2.get_current_user)):
 
     lists = db.query(models.OrdersList).filter(
-        models.OrdersList.applicant_id == current_user.id,
-        models.OrdersList.is_took == False
+        models.OrdersList.applicant_id == current_user.id
     ).all()
 
     if not lists:
