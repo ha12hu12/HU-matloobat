@@ -5,8 +5,9 @@ from . routers import users, auth, orders, orders_list
 app = FastAPI()
 
 origins = [
-    "http://localhost:5173",            # للتطوير المحلي على جهازك
-    "https://hu-matloobat.vercel.app",  # رابط تطبيق الـ Frontend المرفوع على Vercel
+    "http://localhost:5173",            
+    "https://hu-matloobat.vercel.app",
+    "https://hu-matloobat.onrender.com/"  
 ]
 
 app.add_middleware(
