@@ -4,9 +4,14 @@ from . routers import users, auth, orders, orders_list
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:5173",            # للتطوير المحلي على جهازك
+    "https://hu-matloobat.vercel.app",  # رابط تطبيق الـ Frontend المرفوع على Vercel
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
