@@ -263,12 +263,11 @@ def done_item_in_list(credentials: schemas.DoneItem,
     item = item_query.first()
 
     list = db.query(models.OrdersList).filter(
-    models.OrdersList.id == list_id,
-    models.OrdersList.applicant_id == current_user.id).first()
+    models.OrdersList.id == list_id,).first()
 
     if not list:
         raise HTTPException(404,
-                    detail="This list is not yours or it doesn't exist")
+                    detail="This list doesn't exist")
 
     if not item:
         raise HTTPException(404,
@@ -287,7 +286,8 @@ def take_orders_list(id: int, db: Session = Depends(get_db),
                current_user = Depends(oauth2.get_current_user)):
 
     # 1. جلب استعلام الطلب بناءً على الـ ID
-    orders_list_query = db.query(models.OrdersList).filter(models.OrdersList.id == id)
+    orders_list_query = db.query(models.OrdersList).filter(
+        models.OrdersList.id == id)
     orders_list = orders_list_query.first()
 
     # 2. التحقق من وجود الطلب في قاعدة البيانات
