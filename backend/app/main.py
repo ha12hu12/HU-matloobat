@@ -10,9 +10,10 @@ origins = [
     "https://hu-matloobat.onrender.com/"  
 ]
 
+# أضف هذا الجزء مباشرة بعد إنشاء كائن app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # تسمح بالاتصال من أي مصدر (بما فيها localhost)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
