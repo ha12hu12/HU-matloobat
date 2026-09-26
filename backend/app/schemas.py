@@ -54,7 +54,7 @@ class OrderResponseAfterTake(BaseModel):
 
 class OrderCreate(BaseModel):
     order_name: str
-    desc: Optional[str]
+    desc: Optional[str] = None
 
 class OrderUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
