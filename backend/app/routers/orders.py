@@ -31,7 +31,6 @@ def create_order(credentials: schemas.OrderCreate,
 
 
 #--------SHOW ALL ORDERS------------
-
 @router.get("/", response_model=List[schemas.OrderResponse])
 def show_all_orders(db: Session = Depends(get_db),
                     current_user: int = Depends(oauth2.get_current_user),

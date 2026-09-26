@@ -36,7 +36,7 @@ class TokenData(BaseModel):
 class OrderResponseAfterCreate(BaseModel):
     id: int
     order_name: str
-    desc: str
+    desc: Optional[str] = None
     applicant_name: str
     created_at: datetime
     
