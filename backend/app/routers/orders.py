@@ -151,7 +151,8 @@ def update_order(order_credentials: schemas.OrderUpdate,
         raise HTTPException(status.HTTP_404_NOT_FOUND,
                             detail="wrong id")
     
-    dumped_credentials = order_credentials.model_dump(exclude_unset=True)
+    dumped_credentials = order_credentials.model_dump()
+    
 
     for key, value in dumped_credentials.items():
         setattr(order, key, dumped_credentials[f"{key}"])

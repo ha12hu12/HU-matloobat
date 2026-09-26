@@ -59,10 +59,10 @@ class OrderCreate(BaseModel):
 class OrderUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    order_name: str = None
-    desc: str = None
-    payed_to_taker: bool = None
-    received: bool = None
+    order_name: Optional[str] = None
+    desc: Optional[str] = None
+    payed_to_taker: Optional[bool] = False
+    received: Optional[bool] = False
 
 
 #-------------ORDERS_LIST SCHEMAS----------
