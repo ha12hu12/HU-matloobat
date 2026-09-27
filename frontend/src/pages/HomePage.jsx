@@ -21,7 +21,7 @@ export default function HomePage() {
     setLoading(true)
     try {
       const [o, l] = await Promise.all([api.allOrders(searchTerm), api.allLists()])
-      setOrders(o)
+      setOrders(o.filter((order) => !order.is_took))
       setLists(searchTerm ? l.filter((x) => x.list_name.includes(searchTerm)) : l)
     } catch (err) {
       show(err instanceof ApiError ? err.message : 'ما قدرنا نجيب الطلبات', 'error')

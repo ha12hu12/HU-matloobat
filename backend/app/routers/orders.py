@@ -122,7 +122,8 @@ def show_all_taken_orders_by_me(db: Session = Depends(get_db),
     
     orders = db.query(models.Orders).filter(
         models.Orders.taken_by_id == current_user.id).filter(
-            models.Orders.order_name.contains(search_order_name)
+            models.Orders.order_name.contains(search_order_name),
+            models.Orders.done == False
         ).all()
 
     orders_lists = db.query(models.OrdersList).filter(

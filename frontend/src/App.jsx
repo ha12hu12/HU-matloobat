@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx'
 import { ToastProvider } from './context/ToastContext.jsx'
@@ -8,6 +8,7 @@ import MyOrdersPage from './pages/MyOrdersPage.jsx'
 import TakenPage from './pages/TakenPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import NavBar from './components/NavBar.jsx'
+import NewsSheet from './components/NewsSheet.jsx'
 
 const TITLES = {
   home: 'الرئيسية',
@@ -16,8 +17,22 @@ const TITLES = {
   settings: 'الإعدادات',
 }
 
+const NEWS_VERSION = 'v1'
+
 function Shell() {
   const [tab, setTab] = useState('home')
+  const [showNews, setShowNews] = useState(false)
+
+  useEffect(() => {
+    if (localStorage.getItem('hu_seen_news') !== NEWS_VERSION) {
+      setShowNews(true)
+    }
+  }, [])
+
+  function closeNews() {
+    localStorage.setItem('hu_seen_news', NEWS_VERSION)
+    setShowNews(false)
+  }
 
   return (
     <div className="app-shell">
@@ -29,9 +44,10 @@ function Shell() {
         {tab === 'home' && <HomePage />}
         {tab === 'mine' && <MyOrdersPage />}
         {tab === 'taken' && <TakenPage />}
-        {tab === 'settings' && <SettingsPage />}
+        {tab === 'settings' && <SettingsPage onShowNews={() => setShowNews(true)} />}
       </div>
       <NavBar active={tab} onChange={setTab} />
+      {showNews && <NewsSheet onClose={closeNews} />}
     </div>
   )
 }

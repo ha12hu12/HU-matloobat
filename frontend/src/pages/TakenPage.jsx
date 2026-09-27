@@ -41,6 +41,16 @@ export default function TakenPage() {
     }
   }
 
+  async function handleMarkPayed(order) {
+    try {
+      await api.markPayedToTaker(order.id)
+      show('تم — سجّلنا إنك استلمت الفلوس')
+      load()
+    } catch (err) {
+      show(err instanceof ApiError ? err.message : 'صار خطأ', 'error')
+    }
+  }
+
   const isEmpty = !loading && orders.length === 0 && lists.length === 0
 
   return (
@@ -67,7 +77,7 @@ export default function TakenPage() {
                     من {o.applicant_name} · {timeAgo(o.created_at)}
                   </p>
                 </div>
-                {o.done && <span className="seal done">تم</span>}
+                {o.payed_to_taker && <span className="seal done">استلمت الفلوس</span>}
               </div>
               {o.desc && (
                 <>
@@ -76,11 +86,15 @@ export default function TakenPage() {
                 </>
               )}
               <hr className="rule" />
-              <div className="card-foot">
-                <span />
+              <div className="card-foot row-gap">
                 <button className="btn btn-ghost btn-sm" onClick={() => handleUntakeOrder(o)}>
                   اترك الطلب
                 </button>
+                {!o.payed_to_taker && (
+                  <button className="btn btn-moss btn-sm" onClick={() => handleMarkPayed(o)}>
+                    💰 استلمت الفلوس
+                  </button>
+                )}
               </div>
             </div>
           ))}

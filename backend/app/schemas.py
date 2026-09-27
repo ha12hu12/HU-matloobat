@@ -66,7 +66,7 @@ class OrderUpdate(BaseModel):
 
     order_name: Optional[str] = None
     desc: Optional[str] = None
-    
+
 class OrderMakePayedTrue(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -95,7 +95,7 @@ class OrdersListResponse(BaseModel):
 
 class OrdersListShowOrdersITook(BaseModel):
     orders: List[MyOrdersResponse]
-    float: int
+    payed_to_taker: float
     orders_lists: List[OrdersListResponseAfterCreate]
 
 class OrdersListCreate(BaseModel):

@@ -1,6 +1,6 @@
 import { timeAgo } from '../utils/time.js'
 
-export default function OrderCard({ order, currentUsername, onTake, onOpenActions }) {
+export default function OrderCard({ order, currentUsername, onTake, onOpenActions, onMarkReceived }) {
   const isMine = order.applicant_name === currentUsername
   const status = order.done ? 'done' : order.is_took ? 'taken' : null
 
@@ -40,6 +40,24 @@ export default function OrderCard({ order, currentUsername, onTake, onOpenAction
               }}
             >
               خذه
+            </button>
+          </div>
+        </>
+      )}
+
+      {isMine && order.is_took && !order.received && onMarkReceived && (
+        <>
+          <hr className="rule" />
+          <div className="card-foot">
+            <span />
+            <button
+              className="btn btn-moss btn-sm"
+              onClick={(e) => {
+                e.stopPropagation()
+                onMarkReceived(order)
+              }}
+            >
+              ✅ استلمت الطلب
             </button>
           </div>
         </>

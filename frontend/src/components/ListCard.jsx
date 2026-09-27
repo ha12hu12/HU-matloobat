@@ -10,6 +10,9 @@ export default function ListCard({ list, currentUsername, onOpen }) {
           <p className="card-title">📋 {list.list_name}</p>
           <p className="card-sub">
             {isMine ? 'قائمتك' : `من ${list.applicant_name}`} · {timeAgo(list.created_at)}
+            {typeof list.total_price === 'number' && list.total_price > 0 && (
+              <> · الإجمالي {list.total_price} ر.س</>
+            )}
           </p>
         </div>
         {list.is_took && <span className="seal taken">مأخوذة</span>}

@@ -7,8 +7,6 @@ export default function OrderEditSheet({ order, onClose, onChanged }) {
   const { show } = useToast()
   const [orderName, setOrderName] = useState(order.order_name)
   const [desc, setDesc] = useState(order.desc || '')
-  const [payed, setPayed] = useState(!!order.payed_to_taker)
-  const [received, setReceived] = useState(!!order.received)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -18,12 +16,7 @@ export default function OrderEditSheet({ order, onClose, onChanged }) {
     setSaving(true)
     setError('')
     try {
-      await api.updateOrder(order.id, {
-        order_name: orderName.trim(),
-        desc: desc.trim() || undefined,
-        payed_to_taker: order.is_took ? payed : undefined,
-        received: order.is_took ? received : undefined,
-      })
+      await api.updateOrder(order.id, { order_name: orderName.trim(), desc: desc.trim() || undefined })
       show('تم الحفظ')
       onChanged?.()
       onClose()
@@ -60,28 +53,7 @@ export default function OrderEditSheet({ order, onClose, onChanged }) {
           <textarea value={desc} onChange={(e) => setDesc(e.target.value)} />
         </div>
 
-        {order.is_took && (
-          <>
-            <div className="settings-row">
-              <span className="label">استلمت الطلب</span>
-              <button
-                type="button"
-                className={`switch ${received ? 'on' : ''}`}
-                onClick={() => setReceived((v) => !v)}
-              />
-            </div>
-            <div className="settings-row">
-              <span className="label">دفعت اللي أخذ الطلب</span>
-              <button
-                type="button"
-                className={`switch ${payed ? 'on' : ''}`}
-                onClick={() => setPayed((v) => !v)}
-              />
-            </div>
-          </>
-        )}
-
-        <button className="btn btn-gold btn-block" disabled={saving} style={{ marginTop: 16 }}>
+        <button className="btn btn-gold btn-block" disabled={saving}>
           {saving ? 'لحظة...' : 'حفظ'}
         </button>
       </form>

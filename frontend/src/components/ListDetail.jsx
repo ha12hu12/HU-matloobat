@@ -165,6 +165,9 @@ export default function ListDetail({ listId, context, onClose, onChanged }) {
 
           <p className="card-sub" style={{ marginBottom: 16 }}>
             {mode === 'owner' ? 'قائمتك' : `من ${list.applicant_name}`}
+            {typeof list.total_price === 'number' && list.total_price > 0 && (
+              <> · الإجمالي {list.total_price} ر.س</>
+            )}
           </p>
 
           {items.length === 0 && <p className="center-msg">ما فيه عناصر بعد</p>}

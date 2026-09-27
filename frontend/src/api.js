@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "https://hu-matloobat-backend.onrender.com";
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 export class ApiError extends Error {
   constructor(message, status) {
@@ -111,6 +111,14 @@ export const api = {
     request(`/orders/my_orders/${id}`, { method: 'PATCH', body: patch }),
 
   deleteOrder: (id) => request(`/orders/my_orders/${id}`, { method: 'DELETE' }),
+
+  // one-way: applicant confirms they received their order
+  markReceived: (id) =>
+    request(`/orders/my_orders/received/${id}`, { method: 'PATCH', body: { received: true } }),
+
+  // one-way: taker confirms they were paid by the applicant
+  markPayedToTaker: (id) =>
+    request(`/orders/orders_i_took/${id}`, { method: 'PATCH', body: { payed_to_taker: true } }),
 
   // ---------- lists ----------
   createList: (list_name) =>

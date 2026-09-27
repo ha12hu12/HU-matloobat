@@ -5,7 +5,7 @@ import { useToast } from '../context/ToastContext.jsx'
 import { api, ApiError } from '../api.js'
 import Sheet from '../components/Sheet.jsx'
 
-export default function SettingsPage() {
+export default function SettingsPage({ onShowNews }) {
   const { username, logout, renameLocal } = useAuth()
   const { isDark, toggle } = useTheme()
   const { show } = useToast()
@@ -21,6 +21,13 @@ export default function SettingsPage() {
             <div className="hint">{isDark ? 'مفعّل' : 'غير مفعّل'}</div>
           </div>
           <button className={`switch ${isDark ? 'on' : ''}`} onClick={toggle} />
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="settings-row" onClick={onShowNews} style={{ cursor: 'pointer' }}>
+          <div className="label">✨ وش الجديد؟</div>
+          <span className="icon-btn">‹</span>
         </div>
       </div>
 

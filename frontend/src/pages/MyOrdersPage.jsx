@@ -51,7 +51,21 @@ export default function MyOrdersPage() {
         <>
           <div className="section-label">طلباتي المفردة</div>
           {orders.map((o) => (
-            <OrderCard key={o.id} order={o} currentUsername={username} onOpenActions={setEditingOrder} />
+            <OrderCard
+              key={o.id}
+              order={o}
+              currentUsername={username}
+              onOpenActions={setEditingOrder}
+              onMarkReceived={async (order) => {
+                try {
+                  await api.markReceived(order.id)
+                  show('تم — استلمت طلبك')
+                  load()
+                } catch (err) {
+                  show(err instanceof ApiError ? err.message : 'صار خطأ', 'error')
+                }
+              }}
+            />
           ))}
         </>
       )}
