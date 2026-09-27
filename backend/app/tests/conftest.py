@@ -10,9 +10,7 @@ from app.oauth2 import create_access_token
 
 from fastapi.testclient import TestClient
 
-SQL_TEST_DATABASE_URL = f'''postgresql://{settings.database_username}:{settings.
-database_password}@{settings.database_hostname}:{settings.
-database_port}/{settings.database_name}_test'''
+SQL_TEST_DATABASE_URL = f'''postgresql://postgres:ha12hu12@localhost:5432/HU-matloobat_test'''
 
 engine = create_engine(SQL_TEST_DATABASE_URL)
 

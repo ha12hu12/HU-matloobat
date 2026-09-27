@@ -111,3 +111,50 @@ def test_unauthorized_update_my_order(client, order_for_testing):
 
     assert res.status_code == 401
 
+
+def test_make_payed_true(authorized_client2, order_for_testing, authorized_client):
+    order_id = order_for_testing["id"]
+    take_res = authorized_client2.put(f"/orders/{order_id}")
+    assert take_res.status_code == status.HTTP_200_OK
+
+    res = authorized_client2.patch(
+        f"/orders/orders_i_took/{order_id}",
+        json={"payed_to_taker": True},
+    )
+
+    assert res.status_code == status.HTTP_200_OK
+    assert res.json()["id"] == order_id
+    assert res.json()["payed_to_taker"] is True
+
+
+def test_unauthorized_make_payed_true(client, order_for_testing):
+    res = client.patch(
+        f"/orders/orders_i_took/{order_for_testing['id']}",
+        json={"payed_to_taker": True},
+    )
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+def test_make_received_true(authorized_client, order_for_testing):
+    order_id = order_for_testing["id"]
+
+    res = authorized_client.patch(
+        f"/orders/my_orders/received/{order_id}",
+        json={"received": True},
+    )
+
+    assert res.status_code == status.HTTP_200_OK
+    assert res.json()["id"] == order_id
+    assert res.json()["received"] is True
+
+
+def test_unauthorized_make_received_true(client, order_for_testing):
+    res = client.patch(
+        f"/orders/my_orders/received/{order_for_testing['id']}",
+        json={"received": True},
+    )
+
+    assert res.status_code == status.HTTP_401_UNAUTHORIZED
+
+

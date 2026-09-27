@@ -43,6 +43,11 @@ class OrderResponseAfterCreate(BaseModel):
 class OrderResponse(OrderResponseAfterCreate):
     is_took: bool
     taken_by_id: Optional[int] = None
+    created_at: datetime
+
+class MyOrdersResponse(OrderResponseAfterCreate):
+    is_took: bool
+    taken_by_id: Optional[int] = None
     payed_to_taker: bool
     received: bool
     done: bool
@@ -64,6 +69,17 @@ class OrderUpdate(BaseModel):
     payed_to_taker: Optional[bool] = False
     received: Optional[bool] = False
 
+class OrderMakePayedTrue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    payed_to_taker: Optional[bool] = False
+
+class OrderMakeReceivedTrue(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    received: Optional[bool] = False
+
+
 
 #-------------ORDERS_LIST SCHEMAS----------
 class OrdersListResponseAfterCreate(BaseModel):
@@ -72,8 +88,16 @@ class OrdersListResponseAfterCreate(BaseModel):
     applicant_name: str
     created_at: datetime
 
+class OrdersListResponse(BaseModel):
+    id: int
+    list_name: str
+    applicant_name: str
+    total_price: float
+    created_at: datetime
+
 class OrdersListShowOrdersITook(BaseModel):
-    orders: List[OrderResponse]
+    orders: List[MyOrdersResponse]
+    float: int
     orders_lists: List[OrdersListResponseAfterCreate]
 
 class OrdersListCreate(BaseModel):
@@ -83,6 +107,7 @@ class BaseForList(BaseModel):
     id: int
     list_name: str
     applicant_name: str
+    total_price: float
     is_took: bool
     taken_by_id: Optional[int]
     created_at: datetime
@@ -94,7 +119,7 @@ class BaseForItem(BaseModel):
     price: Optional[float]
     created_at: datetime
 
-class OrdersListWithOrdersResponse(BaseModel):
+class OrdersListWithItemsResponse(BaseModel):
     list: BaseForList
     items: Optional[List[BaseForItem]] = None
 
@@ -121,6 +146,7 @@ class BaseForList(BaseModel):
     id: int
     list_name: str
     applicant_name: str
+    total_price: float
     is_took: bool
     taken_by_id: Optional[int]
     created_at: datetime
@@ -137,7 +163,8 @@ class OrdersListWithItemsResponse(BaseModel):
     items: Optional[List[BaseForItem]] = None
 
 class UpdateItem(BaseModel):
-    order_name: Optional[str]
+    order_name: Optional[str] = None
+    price: Optional[float] = None
 
 class DoneItem(BaseModel):
     done: bool

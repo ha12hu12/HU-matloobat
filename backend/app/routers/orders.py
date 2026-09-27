@@ -37,22 +37,24 @@ def show_all_orders(db: Session = Depends(get_db),
                     search_order_name: str = ""):
     
     orders = db.query(models.Orders).filter(
-        models.Orders.order_name.contains(search_order_name)
+        models.Orders.order_name.contains(search_order_name),
+        models.Orders.done == False,
+        models.Orders.is_took == False
     ).all()
 
     return orders
 
 
 #--------SHOW ALL MY ORDERS------------
-
-@router.get("/my_orders", response_model=List[schemas.OrderResponse])
+@router.get("/my_orders", response_model=List[schemas.MyOrdersResponse])
 def show_all_my_orders(db: Session = Depends(get_db),    
                     current_user = Depends(oauth2.get_current_user),
                     search_order_name: str = ""):
     
     orders = db.query(models.Orders).filter(
         models.Orders.applicant_id == current_user.id).filter(
-            models.Orders.order_name.contains(search_order_name)
+        models.Orders.order_name.contains(search_order_name),
+        models.Orders.done == False
         ).all()
 
     if not orders:
@@ -68,7 +70,8 @@ def take_order(id: int, db: Session = Depends(get_db),
                current_user = Depends(oauth2.get_current_user)):
 
     order_query = db.query(models.Orders).filter(
-        models.Orders.id == id
+        models.Orders.id == id,
+        models.Orders.is_took == False
     )
 
     order = order_query.first()
@@ -111,7 +114,6 @@ def take_order(id: int, db: Session = Depends(get_db),
             "order": order}
 
 #--------SHOW ALL THE ORDERS I HAVE TAKEN------------
-
 @router.get("/orders_i_took", 
             response_model=schemas.OrdersListShowOrdersITook)
 def show_all_taken_orders_by_me(db: Session = Depends(get_db),    
@@ -187,6 +189,57 @@ def delete_order(id: int,
     return None
 
 
+#-----MAKE (payed_to_taker) TRUE------
+@router.patch("/orders_i_took/{id}", 
+            response_model=schemas.MyOrdersResponse)
+def make_payed_true(credentials: schemas.OrderMakePayedTrue,
+                 id: int,
+                 db: Session = Depends(get_db),
+                 current_user = Depends(oauth2.get_current_user)):
+
+    order_query = db.query(models.Orders).filter(
+        models.Orders.id == id,
+        models.Orders.received == False,
+        models.Orders.taken_by_id == current_user.id
+    )
+    order = order_query.first()
+
+    if not order:
+        raise HTTPException(404,
+                        detail="The id you entered is wrong or you already got your money or you didn't take this order")
+
+    order_query.update({"payed_to_taker": credentials.payed_to_taker})
+
+    db.commit()
+    db.refresh(order)
+
+    return order
+
+#-----MAKE (received) TRUE------
+@router.patch("/my_orders/received/{id}", 
+            response_model=schemas.MyOrdersResponse)
+def make_received_true(credentials: schemas.OrderMakeReceivedTrue,
+                 id: int,
+                 db: Session = Depends(get_db),
+                 current_user = Depends(oauth2.get_current_user)):
+
+    order_query = db.query(models.Orders).filter(
+        models.Orders.id == id,
+        models.Orders.payed_to_taker == False,
+        models.Orders.applicant_id == current_user.id
+    )
+    order = order_query.first()
+
+    if not order:
+        raise HTTPException(404,
+                        detail="The id you entered is wrong or you already got your order or you dont own this order")
+
+    order_query.update({"received": credentials.received})
+
+    db.commit()
+    db.refresh(order)
+
+    return order
 
 
 

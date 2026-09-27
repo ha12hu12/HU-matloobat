@@ -58,6 +58,8 @@ class OrdersList(Base):
     applicant_name = Column(ForeignKey(column="users.username",
                                     ondelete="CASCADE"), nullable=False)
 
+    total_price = Column(Float, server_default="0")
+
     is_took = Column(Boolean, nullable=False, 
                     server_default="FALSE")
     

@@ -32,7 +32,7 @@ def create_list(credentials: schemas.OrdersListCreate,
     return new_list
 
 #-----SHOW ALL LISTS----------
-@router.get("/", response_model=List[schemas.OrdersListResponseAfterCreate])
+@router.get("/", response_model=List[schemas.OrdersListResponse])
 def show_all_lists(db: Session = Depends(get_db),
                 current_user = Depends(oauth2.get_current_user)):
 
@@ -43,13 +43,23 @@ def show_all_lists(db: Session = Depends(get_db),
     if not lists:
         raise HTTPException(404,
                         detail="There is no lists right now")
+
+    num = 0
+    
+    for list in lists:
+        items = db.query(models.OrdersListItems).filter(
+        models.OrdersListItems.list_id == list.id
+        ).all()
+        for item in items:
+            num += item.price
+        list.total_price = num
     
     return lists
 
 
 #--------GET ONE LIST WITH ITS ORDERS-------
 @router.get("/specific_list/{id}", 
-            response_model=schemas.OrdersListWithOrdersResponse)
+            response_model=schemas.OrdersListWithItemsResponse)
 def show_specific_list(id: int,
                        db: Session = Depends(get_db),
                        current_user = Depends(oauth2.get_current_user)):
@@ -70,6 +80,15 @@ def show_specific_list(id: int,
         return {"list": list,
                 "orders": "no orders"}
 
+    num = 0
+
+    for order in orders:
+        num += order.price
+    list.total_price = num
+
+    db.commit()
+    db.refresh(list)
+
     return {"list": list,
             "items": orders}
 
@@ -85,12 +104,23 @@ def show_all_my_lists(db: Session = Depends(get_db),
     if not lists:
         raise HTTPException(404,
                         detail="You dont have any lists")
+
+    num = 0
+
+    for list in lists:
+        items = db.query(models.OrdersListItems).filter(
+        models.OrdersListItems.list_id == list.id
+        ).all()
+
+        for item in items:
+            num += item.price
+    list.total_price = num
     
     return lists
 
 #--------GET ONE OF YOUR LISTS WITH ITS ORDERS-------
 @router.get("/my_lists/{id}", 
-            response_model=schemas.OrdersListWithOrdersResponse)
+            response_model=schemas.OrdersListWithItemsResponse)
 def show_specific_my_list(id: int,
                        db: Session = Depends(get_db),
                        current_user = Depends(oauth2.get_current_user)):
@@ -111,6 +141,16 @@ def show_specific_my_list(id: int,
     if not orders:
         return {"list": list,
                 "orders": "no orders"}
+
+    num = 0
+
+    for order in orders:
+        num += order.price
+        
+    list.total_price = num
+
+    db.commit()
+    db.refresh(list)
 
     return {"list": list,
             "items": orders}
@@ -173,9 +213,29 @@ def add_item_in_list(credentials: schemas.OrdersListItemAdd,
 
     new_order = models.OrdersListItems(**credentials.model_dump())
 
+    total_price = 0
+
+    list = db.query(models.OrdersList).filter(
+        models.OrdersList.id == credentials.list_id
+    ).first()
+
+    if not list:
+        raise HTTPException(404,
+                            detail="This list does not exist")
+
     db.add(new_order)
     db.commit()
 
+    orders = db.query(models.OrdersListItems).filter(
+        models.OrdersListItems.list_id == list.id
+    ).all()
+
+    for item in orders:
+        list.total_price += item.price
+
+    db.commit()
+    db.refresh(list)
+    
     return new_order
 
 #------DELETE ORDER IN LIST--------
@@ -204,8 +264,11 @@ def delete_order_in_list(list_id: int,
         raise HTTPException(404,
                     detail=f"The order with the id: {id} does not exist")
 
+    list.total_price -= order.price
+
     db.delete(order)
     db.commit()
+    db.refresh(list)
 
     return None
 
@@ -241,7 +304,7 @@ def update_order_in_list(list_id: int,
     dumped_credentials = credentials.model_dump(exclude_unset=True)
 
     for key, value in dumped_credentials.items():
-        setattr(order, key, dumped_credentials[f"{key}"])
+        setattr(order, key, value)
 
     db.commit()
     db.refresh(order)
@@ -249,7 +312,8 @@ def update_order_in_list(list_id: int,
     return order
 
 # ----DONE ONE ITEM ORDERS LIST-----
-@router.patch("/orders_i_took/list/{list_id}/item/{id}", response_model=schemas.BaseForItem)
+@router.patch("/orders_i_took/list/{list_id}/item/{id}", 
+              response_model=schemas.BaseForItem)
 def done_item_in_list(credentials: schemas.DoneItem,
                  id: int,
                  list_id: int,
@@ -263,7 +327,8 @@ def done_item_in_list(credentials: schemas.DoneItem,
     item = item_query.first()
 
     list = db.query(models.OrdersList).filter(
-    models.OrdersList.id == list_id,).first()
+    models.OrdersList.id == list_id,
+    models.OrdersList.taken_by_id == current_user.id).first()
 
     if not list:
         raise HTTPException(404,
