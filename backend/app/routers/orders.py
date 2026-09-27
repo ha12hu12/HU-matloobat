@@ -210,6 +210,9 @@ def make_payed_true(credentials: schemas.OrderMakePayedTrue,
 
     order_query.update({"payed_to_taker": credentials.payed_to_taker})
 
+    if order.received == True:
+        order_query.update({"done": True})
+
     db.commit()
     db.refresh(order)
 
@@ -235,6 +238,9 @@ def make_received_true(credentials: schemas.OrderMakeReceivedTrue,
                         detail="The id you entered is wrong or you already got your order or you dont own this order")
 
     order_query.update({"received": credentials.received})
+
+    if order.payed_to_taker == True:
+        order_query.update({"done": True})
 
     db.commit()
     db.refresh(order)

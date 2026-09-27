@@ -66,9 +66,7 @@ class OrderUpdate(BaseModel):
 
     order_name: Optional[str] = None
     desc: Optional[str] = None
-    payed_to_taker: Optional[bool] = False
-    received: Optional[bool] = False
-
+    
 class OrderMakePayedTrue(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
