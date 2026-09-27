@@ -211,9 +211,7 @@ def add_item_in_list(credentials: schemas.OrdersListItemAdd,
                 db: Session = Depends(get_db),
                 current_user = Depends(oauth2.get_current_user)):
 
-    new_order = models.OrdersListItems(**credentials.model_dump())
-
-    total_price = 0
+    new_order = models.OrdersListItems(**credentials.model_dump()) 
 
     list = db.query(models.OrdersList).filter(
         models.OrdersList.id == credentials.list_id
@@ -230,11 +228,7 @@ def add_item_in_list(credentials: schemas.OrdersListItemAdd,
         models.OrdersListItems.list_id == list.id
     ).all()
 
-    for item in orders:
-        list.total_price += item.price
-
     db.commit()
-    db.refresh(list)
     
     return new_order
 
@@ -264,11 +258,9 @@ def delete_order_in_list(list_id: int,
         raise HTTPException(404,
                     detail=f"The order with the id: {id} does not exist")
 
-    list.total_price -= order.price
 
     db.delete(order)
     db.commit()
-    db.refresh(list)
 
     return None
 

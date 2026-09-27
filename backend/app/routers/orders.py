@@ -228,7 +228,7 @@ def make_received_true(credentials: schemas.OrderMakeReceivedTrue,
 
     order_query = db.query(models.Orders).filter(
         models.Orders.id == id,
-        models.Orders.payed_to_taker == False,
+        models.Orders.received == False,
         models.Orders.applicant_id == current_user.id
     )
     order = order_query.first()
