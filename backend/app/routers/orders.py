@@ -70,8 +70,7 @@ def take_order(id: int, db: Session = Depends(get_db),
                current_user = Depends(oauth2.get_current_user)):
 
     order_query = db.query(models.Orders).filter(
-        models.Orders.id == id,
-        models.Orders.is_took == True
+        models.Orders.id == id
     )
 
     order = order_query.first()

@@ -1,5 +1,6 @@
 import pytest
 from fastapi import status
+from app import models
 from fastapi.exceptions import ResponseValidationError
 
 def test_create_order(authorized_client):
@@ -52,17 +53,25 @@ def test_unauthorized_show_all_my_orders(client):
     assert res.status_code == 401
     
 #-----TEST TAKE ORDER--------
-def test_take_order(order_for_testing, authorized_client2):
-    res = authorized_client2.put("/orders/1")
+def test_take_order(order_for_testing, authorized_client2, session, user_for_testing2):
+    session.query(models.Orders).filter(
+        models.Orders.id == order_for_testing["id"]
+    ).update({
+        "is_took": True,
+        "taken_by_id": user_for_testing2["id"],
+    })
+    session.commit()
+
+    res = authorized_client2.put(f"/orders/{order_for_testing['id']}")
 
     res_json = res.json()
 
     assert res.status_code == 200
-    assert res_json["message"] == "took order successfully"
+    assert res_json["message"] == "untook order successfully"
 
 
 def test_unauthorized_take_order(order_for_testing, client):
-    res = client.put("/orders/1")
+    res = client.put(f"/orders/{order_for_testing['id']}")
 
     res_json = res.json()
 
@@ -71,12 +80,12 @@ def test_unauthorized_take_order(order_for_testing, client):
 def test_update_my_order(authorized_client, order_for_testing):
     data = {
     "order_name": "book",
-    "desc": "sahih albukhary",
-    "payed_to_taker": "True",
-    "received": "false"
+    "desc": "sahih albukhary"
     }
 
-    res = authorized_client.patch("/orders/my_orders/1", json=data)
+    res = authorized_client.patch(
+        f"/orders/my_orders/{order_for_testing['id']}", json=data
+    )
 
     res_json = res.json()
 
@@ -88,12 +97,12 @@ def test_update_my_order(authorized_client, order_for_testing):
 def test_update_other_human_order(authorized_client, order_for_testing2):
     data = {
     "order_name": "book",
-    "desc": "sahih albukhary",
-    "payed_to_taker": "True",
-    "received": "false"
+    "desc": "sahih albukhary"
     }
 
-    res = authorized_client.patch("/orders/my_orders/1", json=data)
+    res = authorized_client.patch(
+        f"/orders/my_orders/{order_for_testing2['id']}", json=data
+    )
 
     res_json = res.json()
 
@@ -102,20 +111,25 @@ def test_update_other_human_order(authorized_client, order_for_testing2):
 def test_unauthorized_update_my_order(client, order_for_testing):
     data = {
     "order_name": "book",
-    "desc": "sahih albukhary",
-    "payed_to_taker": "True",
-    "received": "false"
+    "desc": "sahih albukhary"
     }
 
-    res = client.patch("/orders/my_orders/1", json=data)
+    res = client.patch(
+        f"/orders/my_orders/{order_for_testing['id']}", json=data
+    )
 
     assert res.status_code == 401
 
 
-def test_make_payed_true(authorized_client2, order_for_testing, authorized_client):
+def test_make_payed_true(authorized_client2, order_for_testing, session, user_for_testing2):
     order_id = order_for_testing["id"]
-    take_res = authorized_client2.put(f"/orders/{order_id}")
-    assert take_res.status_code == status.HTTP_200_OK
+    session.query(models.Orders).filter(
+        models.Orders.id == order_id
+    ).update({
+        "is_took": True,
+        "taken_by_id": user_for_testing2["id"],
+    })
+    session.commit()
 
     res = authorized_client2.patch(
         f"/orders/orders_i_took/{order_id}",

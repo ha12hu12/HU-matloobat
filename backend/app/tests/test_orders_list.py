@@ -71,7 +71,7 @@ def test_add_and_delete_item_in_list(authorized_client):
 
     after_delete = authorized_client.get(f"/orders_list/specific_list/{list_id}")
     assert after_delete.status_code == status.HTTP_200_OK
-    assert after_delete.json()["list"]["total_price"] == 0
+    assert after_delete.json()["items"] is None
 
 
 #-----------TEST TOTAL PRICE FOR MULTIPLE ITEMS--------------
