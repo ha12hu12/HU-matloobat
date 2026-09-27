@@ -95,7 +95,6 @@ class OrdersListResponse(BaseModel):
 
 class OrdersListShowOrdersITook(BaseModel):
     orders: List[MyOrdersResponse]
-    payed_to_taker: float
     orders_lists: List[OrdersListResponseAfterCreate]
 
 class OrdersListCreate(BaseModel):
