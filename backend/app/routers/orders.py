@@ -71,7 +71,7 @@ def take_order(id: int, db: Session = Depends(get_db),
 
     order_query = db.query(models.Orders).filter(
         models.Orders.id == id,
-        models.Orders.is_took == False
+        models.Orders.is_took == True
     )
 
     order = order_query.first()
