@@ -610,3 +610,13 @@ a { color: inherit; }
   color: var(--text-soft);
   font-size: 13px;
 }
+
+/* ---------- Offline banner ---------- */
+
+.offline-banner {
+  background: var(--danger);
+  color: #fff;
+  text-align: center;
+  font-size: 12.5px;
+  padding: 7px 12px;
+}

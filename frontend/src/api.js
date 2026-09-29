@@ -11,6 +11,38 @@ function getToken() {
   return localStorage.getItem('hu_token')
 }
 
+// ---------- offline cache: remember the last good answer of each GET request ----------
+const CACHE_PREFIX = 'hu_cache:'
+
+export function clearCache() {
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(CACHE_PREFIX))
+      .forEach((k) => localStorage.removeItem(k))
+  } catch {
+    /* ignore */
+  }
+}
+
+function saveCache(path, data) {
+  // searches change all the time, so we don't keep them
+  if (path.includes('search_order_name=')) return
+  try {
+    localStorage.setItem(CACHE_PREFIX + path, JSON.stringify({ data, savedAt: Date.now() }))
+  } catch {
+    /* storage full or blocked: just skip */
+  }
+}
+
+function readCache(path) {
+  try {
+    const raw = localStorage.getItem(CACHE_PREFIX + path)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 async function request(path, { method = 'GET', body, form, auth = true } = {}) {
   const headers = {}
   let payload
@@ -32,12 +64,20 @@ async function request(path, { method = 'GET', body, form, auth = true } = {}) {
   try {
     res = await fetch(`${BASE_URL}${path}`, { method, headers, body: payload })
   } catch {
+    if (method === 'GET') {
+      const cached = readCache(path)
+      if (cached) {
+        window.dispatchEvent(new CustomEvent('hu:stale', { detail: { savedAt: cached.savedAt } }))
+        return cached.data
+      }
+    }
     throw new ApiError('ما قدرنا نوصل للسيرفر. تأكد من اتصالك بالإنترنت.', 0)
   }
 
   if (res.status === 401) {
     localStorage.removeItem('hu_token')
     localStorage.removeItem('hu_username')
+    clearCache()
     window.dispatchEvent(new Event('hu:unauthorized'))
     throw new ApiError('انتهت جلستك، سجّل الدخول مرة أخرى', 401)
   }
@@ -53,6 +93,11 @@ async function request(path, { method = 'GET', body, form, auth = true } = {}) {
 
   if (!res.ok) {
     throw new ApiError(data?.detail || 'صار خطأ غير متوقع', res.status)
+  }
+
+  if (method === 'GET') {
+    saveCache(path, data)
+    window.dispatchEvent(new Event('hu:fresh'))
   }
 
   return data

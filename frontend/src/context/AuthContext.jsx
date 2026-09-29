@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
-import { api } from '../api.js'
+import { api, clearCache } from '../api.js'
 
 const AuthContext = createContext(null)
 
@@ -24,9 +24,13 @@ export function AuthProvider({ children }) {
           const me = await api.me()
           setUsername(me.username)
           localStorage.setItem('hu_username', me.username)
-        } catch {
-          setToken(null)
-          setUsername(null)
+        } catch (err) {
+          // only a real "your session is invalid" answer (401) should log the user out.
+          // if the server just can't be reached (offline), keep them logged in.
+          if (err.status === 401) {
+            setToken(null)
+            setUsername(null)
+          }
         }
       }
       setReady(true)
@@ -36,6 +40,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const applySession = useCallback((accessToken, uname) => {
+    clearCache()
     localStorage.setItem('hu_token', accessToken)
     localStorage.setItem('hu_username', uname)
     setToken(accessToken)
@@ -60,6 +65,7 @@ export function AuthProvider({ children }) {
   )
 
   const logout = useCallback(() => {
+    clearCache()
     localStorage.removeItem('hu_token')
     localStorage.removeItem('hu_username')
     setToken(null)

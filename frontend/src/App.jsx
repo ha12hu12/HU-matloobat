@@ -9,6 +9,7 @@ import TakenPage from './pages/TakenPage.jsx'
 import SettingsPage from './pages/SettingsPage.jsx'
 import NavBar from './components/NavBar.jsx'
 import NewsSheet from './components/NewsSheet.jsx'
+import OfflineBanner from './components/OfflineBanner.jsx'
 
 const TITLES = {
   home: 'الرئيسية',
@@ -40,6 +41,7 @@ function Shell() {
         <img src="/logo.png" className="mark" alt="HU" />
         <h1>{TITLES[tab]}</h1>
       </div>
+      <OfflineBanner />
       <div className="main-scroll">
         {tab === 'home' && <HomePage />}
         {tab === 'mine' && <MyOrdersPage />}
